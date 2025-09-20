@@ -1,0 +1,25 @@
+{
+  "id": null,
+  "audio_file_path": "uploads/d3b6fb38-90b8-4a44-98b5-0985ab9c8ac0_demo_audio.txt",
+  "text": "这是一个演示转写结果。在实际使用中，这里会显示真实的语音转写内容。",
+  "utterances": [
+    {
+      "speaker": "A",
+      "start": 0,
+      "end": 3000,
+      "text": "这是一个演示转写结果。",
+      "confidence": 0.95
+    },
+    {
+      "speaker": "B",
+      "start": 3000,
+      "end": 6000,
+      "text": "在实际使用中，这里会显示真实的语音转写内容。",
+      "confidence": 0.92
+    }
+  ],
+  "duration": 6.0,
+  "language": "zh-CN",
+  "created_at": "2025-09-20 05:59:16.387457",
+  "status": "completed"
+}
