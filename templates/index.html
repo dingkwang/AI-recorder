@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI增强版录音机</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-section:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+        
+        .upload-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 20px;
+            background: white;
+            border: 2px dashed #4facfe;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            color: #4facfe;
+        }
+        
+        .file-input-label:hover {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .options {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .option-group {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .option-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .option-group select,
+        .option-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .transcripts-section {
+            margin-top: 40px;
+        }
+        
+        .transcripts-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .transcript-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .transcript-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .transcript-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .transcript-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .transcript-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .transcript-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .transcript-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3d8bfe;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .utterance {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .speaker {
+            font-weight: 600;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+        
+        .text {
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        .timestamp {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎙️ AI增强版录音机</h1>
+            <p>录音转写 · 说话人分离 · 智能总结 · 聊天交互</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 上传区域 -->
+            <div class="upload-section">
+                <h2>📁 上传音频文件</h2>
+                <div class="file-input-wrapper">
+                    <input type="file" id="audioFile" class="file-input" accept="audio/*">
+                    <label for="audioFile" class="file-input-label">
+                        <div>📎 点击选择音频文件或拖拽到此处</div>
+                        <div style="font-size: 0.9em; margin-top: 5px; opacity: 0.7;">
+                            支持 MP3, WAV, M4A, FLAC, OGG 格式
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="options">
+                    <div class="option-group">
+                        <label for="speakerDiarization">🗣️ 说话人分离</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="speakerDiarization" checked>
+                            <label for="speakerDiarization">启用说话人分离</label>
+                        </div>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="speakersExpected">👥 预期说话人数</label>
+                        <input type="number" id="speakersExpected" min="1" max="10" placeholder="自动检测">
+                    </div>
+                    
+                    <div class="option-group">
+                        <label for="model">🤖 转写模型</label>
+                        <select id="model">
+                            <option value="universal">Universal (推荐)</option>
+                            <option value="best">Best</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="uploadBtn" class="upload-btn" onclick="uploadAudio()">
+                    🚀 开始转写
+                </button>
+                
+                <div id="status" class="status" style="display: none;"></div>
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <div>正在转写中，请稍候...</div>
+                </div>
+            </div>
+            
+            <!-- 转写记录列表 -->
+            <div class="transcripts-section">
+                <h2>📋 转写记录</h2>
+                <div id="transcriptList" class="transcript-list">
+                    <div style="text-align: center; color: #666; padding: 40px;">
+                        暂无转写记录，请先上传音频文件
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 转写详情模态框 -->
+    <div id="transcriptModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentTranscripts = [];
+        
+        // 页面加载时获取转写记录
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTranscripts();
+        });
+        
+        // 文件选择处理
+        document.getElementById('audioFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const label = document.querySelector('.file-input-label');
+                label.innerHTML = `
+                    <div>✅ ${file.name}</div>
+                    <div style="font-size: 0.9em; margin-top: 5px; opacity: 0.7;">
+                        大小: ${(file.size / 1024 / 1024).toFixed(2)} MB
+                    </div>
+                `;
+            }
+        });
+        
+        // 上传音频
+        async function uploadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showStatus('请先选择音频文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('enable_speaker_diarization', document.getElementById('speakerDiarization').checked);
+            formData.append('speakers_expected', document.getElementById('speakersExpected').value || null);
+            formData.append('model', document.getElementById('model').value);
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            const loading = document.getElementById('loading');
+            const status = document.getElementById('status');
+            
+            uploadBtn.disabled = true;
+            loading.style.display = 'block';
+            status.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('文件上传成功，正在转写中...', 'info');
+                    // 开始轮询转写状态
+                    pollTranscriptionStatus(result.transcript_id);
+                } else {
+                    showStatus(`上传失败: ${result.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`上传失败: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+        
+        // 轮询转写状态
+        async function pollTranscriptionStatus(transcriptId) {
+            const maxAttempts = 60; // 最多轮询60次
+            let attempts = 0;
+            
+            const poll = async () => {
+                try {
+                    const response = await fetch(`/api/transcripts/${transcriptId}`);
+                    const result = await response.json();
+                    
+                    if (response.ok && result.status === 'completed') {
+                        showStatus('转写完成！', 'success');
+                        loadTranscripts(); // 重新加载列表
+                        return;
+                    }
+                    
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, 2000); // 2秒后再次检查
+                    } else {
+                        showStatus('转写超时，请检查转写记录', 'error');
+                    }
+                } catch (error) {
+                    console.error('轮询转写状态失败:', error);
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(poll, 2000);
+                    }
+                }
+            };
+            
+            poll();
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        // 加载转写记录
+        async function loadTranscripts() {
+            try {
+                const response = await fetch('/api/transcripts');
+                const result = await response.json();
+                
+                currentTranscripts = result.transcripts;
+                renderTranscriptList();
+            } catch (error) {
+                console.error('加载转写记录失败:', error);
+            }
+        }
+        
+        // 渲染转写记录列表
+        function renderTranscriptList() {
+            const container = document.getElementById('transcriptList');
+            
+            if (currentTranscripts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 40px;">
+                        暂无转写记录，请先上传音频文件
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = currentTranscripts.map(transcript => `
+                <div class="transcript-item">
+                    <div class="transcript-header">
+                        <div class="transcript-title">${transcript.filename}</div>
+                    </div>
+                    <div class="transcript-meta">
+                        📅 ${new Date(transcript.created_at).toLocaleString('zh-CN')} | 
+                        ⏱️ ${transcript.duration ? transcript.duration.toFixed(1) + 's' : '未知'} | 
+                        📝 ${transcript.text.length} 字符 | 
+                        🗣️ ${transcript.utterances.length} 段对话
+                    </div>
+                    <div class="transcript-actions">
+                        <button class="btn btn-primary" onclick="viewTranscript('${transcript.id}')">
+                            👁️ 查看详情
+                        </button>
+                        <button class="btn btn-secondary" onclick="getSummary('${transcript.id}')">
+                            📊 生成摘要
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 查看转写详情
+        async function viewTranscript(transcriptId) {
+            try {
+                const response = await fetch(`/api/transcripts/${transcriptId}`);
+                const transcript = await response.json();
+                
+                const modal = document.getElementById('transcriptModal');
+                const content = document.getElementById('modalContent');
+                
+                content.innerHTML = `
+                    <h2>📝 ${transcript.filename || '转写详情'}</h2>
+                    <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>基本信息:</strong><br>
+                        时长: ${transcript.duration ? transcript.duration.toFixed(1) + '秒' : '未知'} | 
+                        语言: ${transcript.language || '自动检测'} | 
+                        状态: ${transcript.status}
+                    </div>
+                    
+                    <h3>🗣️ 完整转写内容:</h3>
+                    <div style="margin-bottom: 20px;">
+                        ${transcript.utterances.map(utt => `
+                            <div class="utterance">
+                                <div class="speaker">👤 ${utt.speaker}</div>
+                                <div class="text">${utt.text}</div>
+                                <div class="timestamp">
+                                    ${formatTime(utt.start)} - ${formatTime(utt.end)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('获取转写详情失败:', error);
+                alert('获取转写详情失败');
+            }
+        }
+        
+        // 获取摘要
+        async function getSummary(transcriptId) {
+            try {
+                const response = await fetch(`/api/transcripts/${transcriptId}/summary`);
+                const result = await response.json();
+                
+                const modal = document.getElementById('transcriptModal');
+                const content = document.getElementById('modalContent');
+                
+                content.innerHTML = `
+                    <h2>📊 转写摘要</h2>
+                    <div style="white-space: pre-line; line-height: 1.6; font-size: 1.1em;">
+                        ${result.summary}
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('获取摘要失败:', error);
+                alert('获取摘要失败');
+            }
+        }
+        
+        // 格式化时间
+        function formatTime(milliseconds) {
+            const seconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('transcriptModal').style.display = 'none';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('transcriptModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
